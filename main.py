@@ -20,7 +20,14 @@ if im:
     for i in range(36):
         x.append(cernai(blocks[i]))
 
+    # Беремо абсолютні значення та знаходимо максимум
+    max_val = max(abs(val) for val in x)
+
+    # Нормалізуємо вектор
+    x_normalized = [abs(val)/max_val for val in x]
+
 if st.button("Відобразити вектор ознак", type = "primary"):
     st.write(str(x))
 
-st.button("Нормалізувати вектор охнак", type = "primary")
+if st.button("Нормалізувати вектор ознак", type = "primary"):
+    st.write("Нормалізований вектор:", str(x_normalized))
