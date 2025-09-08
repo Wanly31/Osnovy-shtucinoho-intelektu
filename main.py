@@ -3,14 +3,11 @@ from PIL import Image, ImageDraw
 import pandas as pd
 from func import split_image_into_blocks_with_grid, cernai
 
-# Завантаження файлів
 im = st.file_uploader(
     "Upload images", type=["bmp"]
 )
 
-# Відображення завантажених зображень
 if im:
-    # Відкриваємо зображення за допомогою PIL
     image = Image.open(im).convert("RGB")
 
     blocks, grid_img = split_image_into_blocks_with_grid(image, 6, 6)

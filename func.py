@@ -9,16 +9,15 @@ def split_image_into_blocks_with_grid(image: Image.Image, grid_x: int, grid_y: i
 
     cropped_images = []
 
-    # Створюємо копію для малювання сітки
     grid_image = image.copy()
     draw = ImageDraw.Draw(grid_image)
 
-    # Малюємо вертикальні лінії
+    #вертик лінії
     for i in range(1, grid_x):
         x = i * block_w
         draw.line([(x, 0), (x, height)], fill="black", width=1)
 
-    # Малюємо горизонтальні лінії
+    #горизонт лінії
     for j in range(1, grid_y):
         y = j * block_h
         draw.line([(0, y), (width, y)], fill="black", width=1)
@@ -44,9 +43,7 @@ def cernai(image: Image.Image):
 
     for x in range(width):
         for y in range(height):
-            # Получаем значение цвета пикселя по координатам (R, G, B)
             r, g, b = pixels[x, y]
-            # Черный цвет имеет значения R=0, G=0, B=0
             if r == 0 and g == 0 and b == 0:
                 black_pixel_count += 1
 
