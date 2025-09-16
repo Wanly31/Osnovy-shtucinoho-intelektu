@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image, ImageDraw
 import pandas as pd
-from func import split_image_into_blocks_with_grid, cernai
+from func import split_image_into_blocks_with_grid, cernai, chebyshev_distance
 
 im = st.file_uploader(
     "Upload images", type=["bmp"], accept_multiple_files = True
@@ -21,9 +21,11 @@ if im:
             max_val = max(abs(val) for val in x)
             x_normalized = [abs(val)/max_val for val in x]
 
+
             # Кнопки під зображенням
             if st.button(f"Відобразити вектор ознак {i+1}", key=f"show_{i}"):
                 st.write(f"Абсолютні ознаки: {x}")
 
             if st.button(f"Нормалізувати ознаки {i+1}", key=f"norm_{i}"):
                 st.write(f"Нормовані ознаки: {x_normalized}")
+
