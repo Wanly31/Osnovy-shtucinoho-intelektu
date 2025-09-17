@@ -1,5 +1,6 @@
 import streamlit as st
 from PIL import Image, ImageDraw
+import numpy as np
 
 def split_image_into_blocks_with_grid(image: Image.Image, grid_x: int, grid_y: int):
 
@@ -48,3 +49,6 @@ def cernai(image: Image.Image):
                 black_pixel_count += 1
 
     return black_pixel_count
+
+def l2(v1, v2):
+    return np.max(np.abs(np.array(v1) - np.array(v2)))
