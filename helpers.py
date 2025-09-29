@@ -52,3 +52,22 @@ def cernai(image: Image.Image):
 
 def l2(v1, v2):
     return np.max(np.abs(np.array(v1) - np.array(v2)))
+
+def im_upload(reference_images):
+    #Масив для додавання всіх векторів
+    all_vectors = []
+    
+    cols = st.columns(len(reference_images))
+    for i, (col, img_file) in enumerate(zip(cols, reference_images)):
+        with col:
+            image = Image.open(img_file).convert("RGB").resize((600, 600))
+            blocks, grid_img = split_image_into_blocks_with_grid(image, 6, 6)
+            st.image(grid_img, caption=f"Еталон 1.{i+1}", use_column_width=True)
+
+            x = [cernai(block) for block in blocks]
+            max_val = max(abs(val) for val in x) or 1
+            x_norm = [abs(val)/max_val for val in x]
+
+            all_vectors.append(x_norm)
+
+    return all_vectors
