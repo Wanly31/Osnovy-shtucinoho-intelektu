@@ -37,7 +37,6 @@ def split_image_into_blocks_with_grid(image: Image.Image, grid_x: int, grid_y: i
             cropped_images.append(cropped)
     return cropped_images, grid_image
 
-
 def cernai(image: Image.Image):
 
     black_pixel_count = 0
@@ -50,11 +49,6 @@ def cernai(image: Image.Image):
             if r == 0 and g == 0 and b == 0:
                 black_pixel_count += 1
     return black_pixel_count
-
-
-def l2(v1, v2):
-    return np.max(np.abs(np.array(v1) - np.array(v2)))
-
 
 def im_upload(reference_images):
     # Масив для додавання всіх векторів
@@ -72,23 +66,46 @@ def im_upload(reference_images):
             max_val = max(abs(val) for val in x) or 1
             x_norm = [abs(val) / max_val for val in x]
 
-            all_vectors.append(x_norm)
+
+            #Бінаризація
+            # Бінаризація через поріг 0.5
+            x_bin = [1 if val >= 0.5 else -1 for val in x_norm]
+
+            #Середнє
+            #threshold = sum(x_norm) / len(x_norm)
+            #x_bin = [1 if val >= threshold else -1 for val in x_norm]
+
+            #if st.button(f"Відобразити вектор ознак {i+1}", key=f"show_{i}"):
+                #st.write(f"Абсолютні ознаки: {x_bin}")
+                
+            all_vectors.append(x_bin)
     return all_vectors
 
 
-def perceptron_train(X, y, lr=0.1, max_epochs=100):
-    w = np.zeros(X.shape[1], dtype=np.float32)
-    for epoch in range(max_epochs):
-        errors = 0
-        for xi, yi in zip(X, y):
-            y_pred = 1 if np.dot(w, xi) >= 0 else -1
-            if y_pred != yi:
-                w += lr * (yi - y_pred) * xi
-                errors += 1
-        if errors == 0:
-            break
-    return w
+def hopfield_weights(X):
+    """
+    Обчислює матрицю коефіцієнтів ШНМ Хопфілда.
+    w_ij = sum_k(x_i^k * x_j^k), якщо i ≠ j; 0, якщо i = j
+    """
+    X = np.array(X)
+    m, n = X.shape
+    W = np.zeros((n, n))
 
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                W[i, j] = np.sum(X[:, i] * X[:, j])
+    return W
 
-def perceptron_predict(w, x):
-    return 1 if np.dot(w, x) >= 0 else -1
+import numpy as np
+
+def hopfield_classify(W, x_init, max_iter=100):
+    # Формально: x(0) = x_init; змінюємо у циклі через sign та перевіряємо стабілізацію.
+    x = np.array(x_init, dtype=int) 
+    for it in range(max_iter):
+        S = W @ x    # локальні суми
+        x_new = np.where(S >= 0, 1, -1)
+        if np.array_equal(x_new, x):
+            return x_new, it + 1
+        x = x_new
+    return x, max_iter
