@@ -82,30 +82,54 @@ def im_upload(reference_images):
     return all_vectors
 
 
-def hopfield_weights(X):
+def init_hamming_weights(reference_patterns):
     """
-    Обчислює матрицю коефіцієнтів ШНМ Хопфілда.
-    w_ij = sum_k(x_i^k * x_j^k), якщо i ≠ j; 0, якщо i = j
+    Ініціалізує ваги і пороги для першого шару Хеммінга.
+    reference_patterns: список еталонних векторів (розмір m × n)
     """
-    X = np.array(X)
-    m, n = X.shape
-    W = np.zeros((n, n))
+    patterns = np.array(reference_patterns)  # m × n
+    m, n = patterns.shape
+    W1 = patterns.T / 2            # n × m
+    B1 = np.full(m, n / 2)         # пороги, m-розмірність
+    return W1, B1
 
-    for i in range(n):
-        for j in range(n):
-            if i != j:
-                W[i, j] = np.sum(X[:, i] * X[:, j])
-    return W
+def hamming_first_layer(x, W1, B1):
+    """
+    x: вхідний бінарний вектор (n,)
+    W1: ваги першого шару (n × m)
+    B1: пороги першого шару (m,)
+    """
+    s1 = W1.T @ x + B1  # результати першого шару (m,)
+    y1 = np.maximum(s1, 0)  # ReLU або max(0, s) для стійкості
+    return y1
 
-import numpy as np
+def init_second_layer(y1):
+    """
+    y1: результати першого шару (m,)
+    """
+    return y1.copy()  # ініціалізація другого шару
 
-def hopfield_classify(W, x_init, max_iter=100):
-    # Формально: x(0) = x_init; змінюємо у циклі через sign та перевіряємо стабілізацію.
-    x = np.array(x_init, dtype=int) 
+def update_hamming_second_layer(y2, epsilon):
+    """
+    y2: поточні виходи другого шару (m,)
+    epsilon: вага гальмуючих синапсів (0 < epsilon < 1/m)
+    """
+    m = len(y2)
+    new_y2 = np.zeros_like(y2)
+    for j in range(m):
+        inhibition = np.sum(y2) - y2[j]
+        s2 = y2[j] - epsilon * inhibition
+        new_y2[j] = max(s2, 0)  # порогова функція (max(0, s2))
+    return new_y2
+
+def stabilize_hamming_second_layer(y2, epsilon, max_iter=100):
+    """
+    y2: ініціалізований другий шар (m,)
+    epsilon: вага гальмуючих синапсів
+    """
     for it in range(max_iter):
-        S = W @ x    # локальні суми
-        x_new = np.where(S >= 0, 1, -1)
-        if np.array_equal(x_new, x):
-            return x_new, it + 1
-        x = x_new
-    return x, max_iter
+        new_y2 = update_hamming_second_layer(y2, epsilon)
+        if np.allclose(new_y2, y2, atol=1e-6):
+            return new_y2, it + 1
+        y2 = new_y2
+    return y2, max_iter
